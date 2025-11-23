@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:8080/api', // Ajustar según el backend
+  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:8080/api', // Ajustar según el backend
 });
 
 api.interceptors.request.use((config) => {
