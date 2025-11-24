@@ -1,17 +1,13 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, ListGroup, Button, Modal, Form } from 'react-bootstrap';
-import Calendar from 'react-calendar';
-import 'react-calendar/dist/Calendar.css';
-import { AuthContext } from '../contexts/AuthContext';
 import api from '../services/api';
 
 const DashboardDoctor = () => {
-  const { user } = useContext(AuthContext);
   const [appointments, setAppointments] = useState([]);
   const [availabilities, setAvailabilities] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [timeSlots, setTimeSlots] = useState([]);
+  const [selectedDate, setSelectedDate] = useState('');
+  const [timeSlots, setTimeSlots] = useState('');
 
   useEffect(() => {
     fetchTodayAppointments();
@@ -39,9 +35,11 @@ const DashboardDoctor = () => {
 
   const handleAddAvailability = async () => {
     try {
-      await api.post('/availabilities', { date: selectedDate, timeSlots });
+      await api.post('/availabilities', { date: selectedDate, timeSlots: timeSlots.split(',') });
       fetchAvailabilities();
       setShowModal(false);
+      setSelectedDate('');
+      setTimeSlots('');
     } catch (err) {
       console.error(err);
     }
@@ -93,16 +91,25 @@ const DashboardDoctor = () => {
           <Modal.Title>Agregar Disponibilidad</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Calendar onChange={setSelectedDate} value={selectedDate} />
-          <Form.Group>
-            <Form.Label>Horarios (ej: 09:00,10:00)</Form.Label>
-            <Form.Control
-              type="text"
-              value={timeSlots.join(',')}
-              onChange={(e) => setTimeSlots(e.target.value.split(','))}
-            />
-          </Form.Group>
-          <Button onClick={handleAddAvailability}>Agregar</Button>
+          <Form>
+            <Form.Group>
+              <Form.Label>Fecha</Form.Label>
+              <Form.Control
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+              />
+            </Form.Group>
+            <Form.Group>
+              <Form.Label>Horarios (ej: 09:00,10:00)</Form.Label>
+              <Form.Control
+                type="text"
+                value={timeSlots}
+                onChange={(e) => setTimeSlots(e.target.value)}
+              />
+            </Form.Group>
+            <Button onClick={handleAddAvailability} disabled={!selectedDate || !timeSlots}>Agregar</Button>
+          </Form>
         </Modal.Body>
       </Modal>
     </Container>

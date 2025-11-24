@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Table, Button, Modal, Form } from 'react-bootstrap';
+import { Container, Row, Col, Card, ListGroup, Button, Modal, Form } from 'react-bootstrap';
 import api from '../services/api';
 
 const DashboardAdmin = () => {
@@ -8,8 +8,6 @@ const DashboardAdmin = () => {
   const [stats, setStats] = useState({});
   const [showUserModal, setShowUserModal] = useState(false);
   const [showSpecialtyModal, setShowSpecialtyModal] = useState(false);
-  const [editingUser, setEditingUser] = useState(null);
-  const [editingSpecialty, setEditingSpecialty] = useState(null);
   const [userForm, setUserForm] = useState({ firstName: '', lastName: '', email: '', role: 'PATIENT' });
   const [specialtyForm, setSpecialtyForm] = useState({ name: '' });
 
@@ -48,24 +46,10 @@ const DashboardAdmin = () => {
 
   const handleSaveUser = async () => {
     try {
-      if (editingUser) {
-        await api.put(`/admin/users/${editingUser.id}`, userForm);
-      } else {
-        await api.post('/admin/users', userForm);
-      }
+      await api.post('/admin/users', userForm);
       fetchUsers();
       setShowUserModal(false);
-      setEditingUser(null);
       setUserForm({ firstName: '', lastName: '', email: '', role: 'PATIENT' });
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleDeleteUser = async (id) => {
-    try {
-      await api.delete(`/admin/users/${id}`);
-      fetchUsers();
     } catch (err) {
       console.error(err);
     }
@@ -73,24 +57,10 @@ const DashboardAdmin = () => {
 
   const handleSaveSpecialty = async () => {
     try {
-      if (editingSpecialty) {
-        await api.put(`/specialties/${editingSpecialty.id}`, specialtyForm);
-      } else {
-        await api.post('/specialties', specialtyForm);
-      }
+      await api.post('/specialties', specialtyForm);
       fetchSpecialties();
       setShowSpecialtyModal(false);
-      setEditingSpecialty(null);
       setSpecialtyForm({ name: '' });
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleDeleteSpecialty = async (id) => {
-    try {
-      await api.delete(`/specialties/${id}`);
-      fetchSpecialties();
     } catch (err) {
       console.error(err);
     }
@@ -114,60 +84,32 @@ const DashboardAdmin = () => {
         <Col md={6}>
           <Card>
             <Card.Header>Usuarios <Button onClick={() => setShowUserModal(true)}>Agregar</Button></Card.Header>
-            <Table striped bordered hover>
-              <thead>
-                <tr>
-                  <th>Nombre</th>
-                  <th>Email</th>
-                  <th>Rol</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map(user => (
-                  <tr key={user.id}>
-                    <td>{user.firstName} {user.lastName}</td>
-                    <td>{user.email}</td>
-                    <td>{user.role}</td>
-                    <td>
-                      <Button size="sm" onClick={() => { setEditingUser(user); setUserForm(user); setShowUserModal(true); }}>Editar</Button>
-                      <Button size="sm" variant="danger" onClick={() => handleDeleteUser(user.id)}>Eliminar</Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
+            <ListGroup variant="flush">
+              {users.map(user => (
+                <ListGroup.Item key={user.id}>
+                  {user.firstName} {user.lastName} - {user.email} ({user.role})
+                </ListGroup.Item>
+              ))}
+            </ListGroup>
           </Card>
         </Col>
         <Col md={6}>
           <Card>
             <Card.Header>Especialidades <Button onClick={() => setShowSpecialtyModal(true)}>Agregar</Button></Card.Header>
-            <Table striped bordered hover>
-              <thead>
-                <tr>
-                  <th>Nombre</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {specialties.map(s => (
-                  <tr key={s.id}>
-                    <td>{s.name}</td>
-                    <td>
-                      <Button size="sm" onClick={() => { setEditingSpecialty(s); setSpecialtyForm(s); setShowSpecialtyModal(true); }}>Editar</Button>
-                      <Button size="sm" variant="danger" onClick={() => handleDeleteSpecialty(s.id)}>Eliminar</Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
+            <ListGroup variant="flush">
+              {specialties.map(s => (
+                <ListGroup.Item key={s.id}>
+                  {s.name}
+                </ListGroup.Item>
+              ))}
+            </ListGroup>
           </Card>
         </Col>
       </Row>
 
       <Modal show={showUserModal} onHide={() => setShowUserModal(false)}>
         <Modal.Header closeButton>
-          <Modal.Title>{editingUser ? 'Editar Usuario' : 'Agregar Usuario'}</Modal.Title>
+          <Modal.Title>Agregar Usuario</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form>
@@ -191,14 +133,14 @@ const DashboardAdmin = () => {
                 <option value="ADMIN">Admin</option>
               </Form.Select>
             </Form.Group>
-            <Button onClick={handleSaveUser}>{editingUser ? 'Actualizar' : 'Crear'}</Button>
+            <Button onClick={handleSaveUser}>Crear</Button>
           </Form>
         </Modal.Body>
       </Modal>
 
       <Modal show={showSpecialtyModal} onHide={() => setShowSpecialtyModal(false)}>
         <Modal.Header closeButton>
-          <Modal.Title>{editingSpecialty ? 'Editar Especialidad' : 'Agregar Especialidad'}</Modal.Title>
+          <Modal.Title>Agregar Especialidad</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form>
@@ -206,7 +148,7 @@ const DashboardAdmin = () => {
               <Form.Label>Nombre</Form.Label>
               <Form.Control value={specialtyForm.name} onChange={(e) => setSpecialtyForm({...specialtyForm, name: e.target.value})} />
             </Form.Group>
-            <Button onClick={handleSaveSpecialty}>{editingSpecialty ? 'Actualizar' : 'Crear'}</Button>
+            <Button onClick={handleSaveSpecialty}>Crear</Button>
           </Form>
         </Modal.Body>
       </Modal>
